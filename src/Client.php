@@ -27,6 +27,16 @@ class Client
     private $authToken;
 
     /**
+     * @var string
+     */
+    private $username;
+    
+    /**
+     * @var string
+     */
+    private $password;
+
+    /**
      * @param string $domain
      * @param string $username
      * @param string $password
@@ -36,7 +46,8 @@ class Client
     {
         $this->domain = $domain;
         $this->httpClient = $client ?: new GuzzleClient();
-        $this->login($username, $password);
+        $this->username = $username;
+        $this->password = $password;
     }
 
     /**
@@ -46,7 +57,10 @@ class Client
     public function shorten(string $url): ?array
     {
         if (!$this->authToken) {
-            return null;
+            $login = $this->login($this->username, $this->password);
+            if (!$login) {
+                return null;
+            }
         }
         $request = new Request('POST', $this->domain . '/api/v1/shorten');
         $request->getBody()->write(
